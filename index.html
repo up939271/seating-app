@@ -3,11 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
   <title>Seating Arrangement For Kharis</title>
+
+  <!-- ===================== -->
+  <!-- 1.A OFFLINE / PWA TAGS -->
+  <!-- ===================== -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Kharis Seating">
+
   <style>
     :root{
-      --main1: #7c3aed; /* purple */
-      --main2: #2563eb; /* blue */
+      --main1: #7c3aed;
+      --main2: #2563eb;
       --otherGlow: rgba(17,24,39,0.06);
       --text: #111827;
       --muted: #6b7280;
@@ -28,683 +39,246 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .wrap{
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 12px;
-    }
+    .wrap{ max-width:1200px; margin:0 auto; padding:12px; }
 
     .panel{
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 10px;
+      position:sticky; top:0; z-index:50;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(8px);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
       display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
-    .title{
-      display:flex;
-      flex-direction: column;
-      gap: 2px;
-      flex: 1 1 260px;
-      min-width: 240px;
-    }
-    .title h1{
-      font-size: 15px;
-      margin:0;
-      line-height: 1.2;
-    }
-    .title p{
-      margin:0;
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 1.35;
-    }
+    .title h1{ font-size:15px; margin:0; }
+    .title p{ font-size:11px; margin:0; color:var(--muted); }
 
-    .controls{
-      display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
+    .controls{ display:flex; gap:8px; }
 
     button{
-      appearance:none;
-      border: 1px solid #d1d5db;
-      background: #111827;
-      color: white;
-      padding: 9px 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 850;
-      font-size: 13px;
-      min-height: 40px; /* mobile tap target */
+      border:1px solid #d1d5db;
+      background:#111827;
+      color:#fff;
+      padding:9px 10px;
+      border-radius:10px;
+      font-weight:800;
+      font-size:13px;
+      min-height:40px;
     }
-    button.secondary{
-      background: white;
-      color: var(--text);
-    }
-    button.danger{
-      background: var(--danger);
-      border-color: var(--danger);
-      color: white;
-    }
-    button:active{ transform: translateY(1px); }
-
-    .legend{
-      display:flex;
-      gap: 12px;
-      align-items:center;
-      flex-wrap: wrap;
-      margin: 10px 2px 0;
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .swatch{
-      width: 12px;
-      height: 12px;
-      border-radius: 4px;
-      border: 1px solid #cbd5e1;
-      display:inline-block;
-      margin-right: 6px;
-      vertical-align: -2px;
-    }
-
-    .info{
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--muted);
-      display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-    .pill{
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 999px;
-      padding: 5px 9px;
-      font-weight: 750;
-      color: #374151;
-      white-space: nowrap;
-    }
+    button.danger{ background:var(--danger); border-color:var(--danger); }
 
     .seating-area{
-      margin-top: 12px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px;
+      margin-top:12px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
     }
 
     .row-label{
-      font-weight: 900;
-      font-size: 12px;
-      color: #374151;
-      margin: 0 0 6px 2px;
-      display:flex;
-      align-items:center;
-      gap: 8px;
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:6px;
     }
 
-    /* ✅ Mobile-first: horizontal scroll for long rows */
-    .row-scroll{
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 6px;
-    }
-
+    .row-scroll{ overflow-x:auto; }
     .row{
       display:grid;
-      gap: 4px;
-      align-items: start;
-      margin-bottom: 10px;
+      gap:4px;
+      margin-bottom:10px;
     }
 
-    /* chair seat cell */
     .seat{
-      border: 1px solid #e5e7eb;
-      background: white;
-      border-radius: 10px;
-      padding: 6px 6px 7px;
-      min-width: 74px;
-      max-width: 74px; /* keep consistent in scroll rows */
+      min-width:74px;
+      max-width:74px;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      padding:6px;
       display:flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      position: relative;
-      cursor: pointer;
-      user-select: none;
-      touch-action: manipulation;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      position:relative;
     }
 
     .seat::before{
       content:"";
       position:absolute;
-      inset: 2px;
-      border-radius: 9px;
-      background: var(--otherGlow);
-      opacity: 0.7;
-      z-index: 0;
+      inset:2px;
+      border-radius:9px;
+      background:var(--otherGlow);
+      z-index:0;
     }
-    .seat > * { position: relative; z-index: 1; }
+    .seat > *{ position:relative; z-index:1; }
+
+    .seat.main1::before{ background:color-mix(in srgb, var(--main1) 18%, white); }
+    .seat.main2::before{ background:color-mix(in srgb, var(--main2) 18%, white); }
 
     .chair-wrap{
-      width: 40px;
-      height: 40px;
-      display:grid;
-      place-items: center;
-      border-radius: 10px;
-      background: rgba(17,24,39,0.03);
+      width:40px; height:40px;
+      display:grid; place-items:center;
     }
+    .chair-icon{ width:28px; height:28px; }
+    .chair-icon path{ fill:var(--chair); }
 
-    .chair-icon{
-      width: 28px;
-      height: 28px;
-      display:block;
-    }
-    .chair-icon path{ fill: var(--chair); }
+    .seat-label{ font-size:10px; font-weight:900; }
 
-    .seat-label{
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 0.2px;
-      line-height: 1;
-    }
-
-    /* ✅ Mobile-friendly input: still compact, but tap-friendly */
     .seat input{
-      width: 100%;
-      padding: 6px 6px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      font-size: 12px;
-      outline: none;
-      background: rgba(255,255,255,0.95);
-      text-align: center;
-      pointer-events: auto;
-      min-height: 32px; /* tap target */
-    }
-    .seat input:focus{
-      border-color: #64748b;
-      box-shadow: 0 0 0 3px rgba(100,116,139,0.12);
-    }
-
-    .seat.main1::before{
-      background: color-mix(in srgb, var(--main1) 18%, white);
-      opacity: 1;
-    }
-    .seat.main2::before{
-      background: color-mix(in srgb, var(--main2) 18%, white);
-      opacity: 1;
-    }
-    .seat.main1 .chair-wrap{
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--main1) 55%, white);
-      background: color-mix(in srgb, var(--main1) 10%, white);
-    }
-    .seat.main2 .chair-wrap{
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--main2) 55%, white);
-      background: color-mix(in srgb, var(--main2) 10%, white);
+      width:100%;
+      font-size:12px;
+      padding:6px;
+      border-radius:8px;
+      border:1px solid #d1d5db;
+      text-align:center;
     }
 
     .role-badge{
       position:absolute;
-      top: 5px;
-      right: 6px;
-      font-size: 9px;
-      font-weight: 900;
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(17,24,39,0.18);
-      background: rgba(255,255,255,0.88);
-      z-index: 2;
-      pointer-events: none;
-      white-space: nowrap;
+      top:4px; right:5px;
+      font-size:9px;
+      font-weight:900;
+      padding:2px 6px;
+      background:#fff;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
     }
 
-    /* Modal (mobile friendly) */
     .modal-backdrop{
-      position: fixed;
-      inset: 0;
-      background: rgba(17,24,39,0.50);
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.5);
       display:none;
-      align-items: flex-end; /* ✅ bottom sheet on phone */
-      justify-content: center;
-      padding: 12px;
-      z-index: 1000;
-    }
-    .modal{
-      width: 100%;
-      max-width: 680px;
-      background: white;
-      border-radius: 16px 16px 16px 16px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-      overflow: hidden;
-    }
-    .modal-header{
-      padding: 12px 14px;
-      border-bottom: 1px solid #e5e7eb;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .modal-header h2{
-      font-size: 14px;
-      margin:0;
-      font-weight: 900;
-      color: #111827;
-    }
-    .modal-body{
-      padding: 12px 14px;
-      display:flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 13px;
-      color: #374151;
-    }
-    .modal-actions{
-      padding: 12px 14px;
-      border-top: 1px solid #e5e7eb;
-      display:grid;
-      gap: 10px;
-    }
-    .modal-actions button{
-      width: 100%;
-      min-height: 44px; /* ✅ mobile tap target */
-      border-radius: 12px;
-      padding: 12px;
-    }
-    .close-x{
-      background: transparent;
-      border: 1px solid #e5e7eb;
-      color: #111827;
-      padding: 6px 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 900;
-      min-height: 36px;
+      align-items:flex-end;
+      padding:12px;
+      z-index:1000;
     }
 
-    /* Larger screens: modal centered with row buttons inline */
-    @media (min-width: 720px){
-      .modal-backdrop{ align-items: center; }
-      .modal-actions{
-        display:flex;
-        justify-content: flex-end;
-        flex-wrap: wrap;
-      }
-      .modal-actions button{
-        width: auto;
-        min-height: 40px;
-        padding: 9px 12px;
-        border-radius: 10px;
-      }
+    .modal{
+      width:100%;
+      background:#fff;
+      border-radius:16px;
+      border:1px solid #e5e7eb;
     }
+
+    .modal-header, .modal-body, .modal-actions{
+      padding:12px 14px;
+    }
+
+    .modal-actions{ display:grid; gap:10px; }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="panel">
       <div class="title">
         <h1>Seating Arrangement For Kharis</h1>
-        <p>
-          Seats auto-split into Front & Back. Rows scroll sideways if there are many seats.
-          Tap a chair to set for GS (purple) or Pas. Awo (blue). Names auto-save.
-        </p>
+        <p>Tap a chair to assign GS (purple) or Pas. Awo (blue)</p>
       </div>
-
       <div class="controls">
-        <button id="setupBtn">Set Up / Rebuild</button>
+        <button id="setupBtn">Set Up</button>
         <button id="startOverBtn" class="danger">Start Over</button>
       </div>
     </div>
 
-    <div class="legend">
-      <span><span class="swatch" style="background: color-mix(in srgb, var(--main1) 18%, white);"></span>Main #1</span>
-      <span><span class="swatch" style="background: color-mix(in srgb, var(--main2) 18%, white);"></span>Main #2</span>
-      <span><span class="swatch" style="background: rgba(17,24,39,0.06);"></span>Other</span>
-    </div>
-
-    <div class="info" id="infoBar"></div>
-
     <div class="seating-area">
       <div class="row-label">Back Row</div>
-      <div class="row-scroll">
-        <div id="backRow" class="row"></div>
-      </div>
+      <div class="row-scroll"><div id="backRow" class="row"></div></div>
 
       <div class="row-label">Front Row</div>
-      <div class="row-scroll">
-        <div id="frontRow" class="row"></div>
-      </div>
+      <div class="row-scroll"><div id="frontRow" class="row"></div></div>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+  <div id="modalBackdrop" class="modal-backdrop">
     <div class="modal">
-      <div class="modal-header">
-        <h2 id="modalTitle">Seat Options</h2>
-        <button class="close-x" id="modalCloseBtn" aria-label="Close">✕</button>
-      </div>
-      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-header"><strong>Seat Options</strong></div>
       <div class="modal-actions">
-        <button class="secondary" id="clearMainBtn">Clear Main</button>
-        <button id="setMain2Btn">Set as Main #2 (Blue)</button>
-        <button id="setMain1Btn">Set as Main #1 (Purple)</button>
+        <button id="setMain1Btn">Set GS (Purple)</button>
+        <button id="setMain2Btn">Set Pas. Awo (Blue)</button>
+        <button id="clearMainBtn">Clear</button>
       </div>
     </div>
   </div>
 
   <script>
-    // Storage
-    const KEY_STATE = "seating_game_state_mobile_v1";
+    const KEY_STATE = "kharis_seating_offline";
+    const backRow = document.getElementById("backRow");
+    const frontRow = document.getElementById("frontRow");
+    const modal = document.getElementById("modalBackdrop");
+    let state = JSON.parse(localStorage.getItem(KEY_STATE) || "null");
+    let activeSeat = null;
 
-    // DOM
-    const setupBtn = document.getElementById("setupBtn");
-    const startOverBtn = document.getElementById("startOverBtn");
-    const backRowEl = document.getElementById("backRow");
-    const frontRowEl = document.getElementById("frontRow");
-    const infoBar = document.getElementById("infoBar");
-
-    const modalBackdrop = document.getElementById("modalBackdrop");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalBody = document.getElementById("modalBody");
-    const modalCloseBtn = document.getElementById("modalCloseBtn");
-    const setMain1Btn = document.getElementById("setMain1Btn");
-    const setMain2Btn = document.getElementById("setMain2Btn");
-    const clearMainBtn = document.getElementById("clearMainBtn");
-
-    // State
-    let state = null;
-    let activeSeatId = null;
-
-    // Helpers
-    function safeParse(json) { try { return JSON.parse(json); } catch { return null; } }
-    function saveState() { localStorage.setItem(KEY_STATE, JSON.stringify(state)); }
-    function loadState() {
-      const raw = localStorage.getItem(KEY_STATE);
-      return raw ? safeParse(raw) : null;
-    }
-    function clearState() { localStorage.removeItem(KEY_STATE); }
-
-    function promptInt(message, { min = 1, max = 200 } = {}) {
-      while (true) {
-        const raw = prompt(message);
-        if (raw === null) return null;
-        const n = Number.parseInt(raw, 10);
-        if (Number.isFinite(n) && n >= min && n <= max) return n;
-        alert(`Please enter a whole number between ${min} and ${max}.`);
-      }
-    }
-
-    function buildSeatId(rowKey, index1based) { return `${rowKey}-${index1based}`; }
-
-    // ✅ IMPORTANT: grid width uses fixed seat width so scroll works nicely
-    function setGridColumns(frontCount, backCount) {
-      frontRowEl.style.gridTemplateColumns = `repeat(${frontCount}, 74px)`;
-      backRowEl.style.gridTemplateColumns  = `repeat(${backCount}, 74px)`;
-    }
-
-    function seatRole(seatId) {
-      if (seatId === state.main1) return "MAIN #1";
-      if (seatId === state.main2) return "MAIN #2";
-      return "Other";
-    }
-
-    function seatClass(seatId) {
-      if (seatId === state.main1) return "seat main1";
-      if (seatId === state.main2) return "seat main2";
-      return "seat";
-    }
-
-    function renderInfoBar() {
-      if (!state) { infoBar.innerHTML = ""; return; }
-      const frontCount = state.front.length;
-      const backCount = state.back.length;
-      const main1Label = state.main1 ? state.main1.toUpperCase() : "Not set";
-      const main2Label = state.main2 ? state.main2.toUpperCase() : "Not set";
-
-      infoBar.innerHTML = `
-        <span class="pill">Total: ${state.totalSeats}</span>
-        <span class="pill">Front: ${frontCount}</span>
-        <span class="pill">Back: ${backCount}</span>
-        <span class="pill">Main #1: ${main1Label}</span>
-        <span class="pill">Main #2: ${main2Label}</span>
-      `;
-    }
-
-    function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-    }
-
-    // Chair SVG
-    function chairSvg() {
+    function chairSvg(){
       return `
-        <svg class="chair-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <path d="M22 8h20c2.2 0 4 1.8 4 4v20H18V12c0-2.2 1.8-4 4-4z"></path>
-          <path d="M14 32h36c2.2 0 4 1.8 4 4v8H10v-8c0-2.2 1.8-4 4-4z"></path>
-          <path d="M16 44h8v12h-8z"></path>
-          <path d="M40 44h8v12h-8z"></path>
-        </svg>
-      `;
+      <svg class="chair-icon" viewBox="0 0 64 64">
+        <path d="M22 8h20c2 0 4 2 4 4v20H18V12c0-2 2-4 4-4z"/>
+        <path d="M14 32h36c2 0 4 2 4 4v8H10v-8c0-2 2-4 4-4z"/>
+        <path d="M16 44h8v12h-8z"/>
+        <path d="M40 44h8v12h-8z"/>
+      </svg>`;
     }
 
-    // Modal
-    function openModalForSeat(seat) {
-      activeSeatId = seat.id;
-      modalTitle.textContent = `Seat Options — ${seat.id.toUpperCase()}`;
-      const role = seatRole(seat.id);
-      const name = seat.name ? seat.name : "(no name yet)";
-
-      modalBody.innerHTML = `
-        <div><strong>Row:</strong> ${seat.rowName}</div>
-        <div><strong>Seat:</strong> ${seat.position}</div>
-        <div><strong>Current role:</strong> ${role}</div>
-        <div><strong>Name:</strong> ${escapeHtml(name)}</div>
-        <div style="color:#6b7280; margin-top:6px;">
-          Choosing Main #1/#2 moves that role from the previous seat (if any).
-        </div>
-      `;
-
-      modalBackdrop.style.display = "flex";
-      modalBackdrop.setAttribute("aria-hidden", "false");
+    function build(n){
+      state={total:n, front:[], back:[], main1:null, main2:null};
+      const f=Math.ceil(n/2), b=n-f;
+      for(let i=1;i<=f;i++) state.front.push({id:`f${i}`,name:""});
+      for(let i=1;i<=b;i++) state.back.push({id:`b${i}`,name:""});
+      save(); render();
     }
 
-    function closeModal() {
-      activeSeatId = null;
-      modalBackdrop.style.display = "none";
-      modalBackdrop.setAttribute("aria-hidden", "true");
+    function save(){ localStorage.setItem(KEY_STATE, JSON.stringify(state)); }
+
+    function renderRow(el, seats){
+      el.innerHTML="";
+      seats.forEach((s,i)=>{
+        const d=document.createElement("div");
+        d.className="seat";
+        if(s.id===state.main1) d.classList.add("main1");
+        if(s.id===state.main2) d.classList.add("main2");
+        d.innerHTML=`
+          <div class="role-badge">${s.id===state.main1?"GS":s.id===state.main2?"PA":"-"}</div>
+          <div class="chair-wrap">${chairSvg()}</div>
+          <div class="seat-label">Seat ${i+1}</div>
+          <input value="${s.name||""}">
+        `;
+        d.onclick=()=>{activeSeat=s.id; modal.style.display="flex";}
+        d.querySelector("input").oninput=e=>{s.name=e.target.value; save();}
+        el.appendChild(d);
+      });
     }
 
-    function findSeatById(seatId) {
-      return [...state.front, ...state.back].find(s => s.id === seatId) || null;
+    function render(){
+      backRow.style.gridTemplateColumns=`repeat(${state.back.length},74px)`;
+      frontRow.style.gridTemplateColumns=`repeat(${state.front.length},74px)`;
+      renderRow(backRow,state.back);
+      renderRow(frontRow,state.front);
     }
 
-    function applyMain(role) {
-      if (!state || !activeSeatId) return;
+    document.getElementById("setMain1Btn").onclick=()=>{state.main1=activeSeat; save(); render(); modal.style.display="none";}
+    document.getElementById("setMain2Btn").onclick=()=>{state.main2=activeSeat; save(); render(); modal.style.display="none";}
+    document.getElementById("clearMainBtn").onclick=()=>{if(state.main1===activeSeat)state.main1=null;if(state.main2===activeSeat)state.main2=null; save(); render(); modal.style.display="none";}
 
-      if (role === "main1") {
-        if (state.main2 === activeSeatId) state.main2 = null;
-        state.main1 = activeSeatId;
-      } else if (role === "main2") {
-        if (state.main1 === activeSeatId) state.main1 = null;
-        state.main2 = activeSeatId;
-      } else if (role === "clear") {
-        if (state.main1 === activeSeatId) state.main1 = null;
-        if (state.main2 === activeSeatId) state.main2 = null;
-      }
+    document.getElementById("setupBtn").onclick=()=>{const n=prompt("Total seats?"); if(n) build(+n);}
+    document.getElementById("startOverBtn").onclick=()=>{localStorage.clear(); location.reload();}
 
-      saveState();
-      renderAll();
-      closeModal();
-    }
-
-    // Rendering
-    function clearSeatsDom() {
-      backRowEl.innerHTML = "";
-      frontRowEl.innerHTML = "";
-    }
-
-    function renderRow(rowEl, rowSeats) {
-      for (const seat of rowSeats) {
-        const seatDiv = document.createElement("div");
-        seatDiv.className = seatClass(seat.id);
-
-        // Role badge (always visible)
-        const badge = document.createElement("div");
-        badge.className = "role-badge";
-        badge.textContent = seatRole(seat.id);
-
-        const chairWrap = document.createElement("div");
-        chairWrap.className = "chair-wrap";
-        chairWrap.innerHTML = chairSvg();
-
-        const label = document.createElement("div");
-        label.className = "seat-label";
-        label.textContent = seat.label;
-
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = seat.name || "";
-        input.placeholder = "Name";
-        input.addEventListener("input", (e) => {
-          seat.name = e.target.value;
-          saveState();
-        });
-
-        // Tap seat to open modal (but not when typing)
-        seatDiv.addEventListener("click", (e) => {
-          if (e.target && e.target.tagName === "INPUT") return;
-          openModalForSeat(seat);
-        });
-
-        seatDiv.appendChild(badge);
-        seatDiv.appendChild(chairWrap);
-        seatDiv.appendChild(label);
-        seatDiv.appendChild(input);
-
-        rowEl.appendChild(seatDiv);
-      }
-    }
-
-    function renderAll() {
-      if (!state) return;
-      clearSeatsDom();
-      setGridColumns(state.front.length, state.back.length);
-      renderRow(backRowEl, state.back);
-      renderRow(frontRowEl, state.front);
-      renderInfoBar();
-    }
-
-    // Setup
-    function buildNewState(totalSeats) {
-      const frontCount = Math.ceil(totalSeats / 2);
-      const backCount = totalSeats - frontCount;
-
-      const front = [];
-      const back = [];
-
-      for (let i = 1; i <= frontCount; i++) {
-        front.push({
-          id: buildSeatId("front", i),
-          label: `Seat ${i}`,
-          position: i,
-          rowName: "Front",
-          name: ""
-        });
-      }
-
-      for (let i = 1; i <= backCount; i++) {
-        back.push({
-          id: buildSeatId("back", i),
-          label: `Seat ${i}`,
-          position: i,
-          rowName: "Back",
-          name: ""
-        });
-      }
-
-      return { totalSeats, front, back, main1: null, main2: null };
-    }
-
-    function setupOrRebuild() {
-      const n = promptInt("How many TOTAL seats do you want (across both rows)?", { min: 2, max: 120 });
-      if (n === null) return;
-
-      const old = state;
-      state = buildNewState(n);
-
-      // Preserve names + mains when possible
-      if (old) {
-        if (old.main1 && findSeatById(old.main1)) state.main1 = old.main1;
-        if (old.main2 && findSeatById(old.main2)) state.main2 = old.main2;
-
-        const oldById = new Map([...old.front, ...old.back].map(s => [s.id, s]));
-        for (const seat of [...state.front, ...state.back]) {
-          const prev = oldById.get(seat.id);
-          if (prev && prev.name) seat.name = prev.name;
-        }
-      }
-
-      saveState();
-      renderAll();
-    }
-
-    // Start over
-    function startOver() {
-      const ok = confirm("Start over and clear everything (layout, names, main seats)?");
-      if (!ok) return;
-
-      clearState();
-      state = null;
-      clearSeatsDom();
-      renderInfoBar();
-      setupOrRebuild();
-    }
-
-    // Events
-    setupBtn.addEventListener("click", setupOrRebuild);
-    startOverBtn.addEventListener("click", startOver);
-
-    modalCloseBtn.addEventListener("click", closeModal);
-    modalBackdrop.addEventListener("click", (e) => {
-      if (e.target === modalBackdrop) closeModal();
-    });
-
-    setMain1Btn.addEventListener("click", () => applyMain("main1"));
-    setMain2Btn.addEventListener("click", () => applyMain("main2"));
-    clearMainBtn.addEventListener("click", () => applyMain("clear"));
-
-    // Boot
-    (function boot(){
-      const loaded = loadState();
-      if (loaded && loaded.totalSeats && (loaded.front || loaded.back)) {
-        state = loaded;
-        state.front = Array.isArray(state.front) ? state.front : [];
-        state.back  = Array.isArray(state.back)  ? state.back  : [];
-        state.main1 = state.main1 || null;
-        state.main2 = state.main2 || null;
-        renderAll();
-      } else {
-        setupOrRebuild();
-      }
-    })();
+    if(state) render();
   </script>
+
+  <!-- ============================ -->
+  <!-- 1.B SERVICE WORKER REGISTER -->
+  <!-- ============================ -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+  </script>
+
 </body>
 </html>
-```
