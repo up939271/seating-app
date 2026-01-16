@@ -267,18 +267,18 @@
     document.getElementById("startOverBtn").onclick=()=>{localStorage.clear(); location.reload();}
 
     if(state) render();
- <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", async () => {
-      try {
-        const reg = await navigator.serviceWorker.register("/seating-app/sw.js");
-        if (reg.update) reg.update();
-      } catch (e) {
-        console.log("Service worker registration failed:", e);
-      }
-    });
-  }
-</script>
+  </script>
+
+  <!-- ============================ -->
+  <!-- 1.B SERVICE WORKER REGISTER -->
+  <!-- ============================ -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+  </script>
 
 </body>
 </html>
